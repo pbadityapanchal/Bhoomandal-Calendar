@@ -220,8 +220,17 @@
             background: var(--light-purple);
             padding: 20px;
             border-radius: 50px;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             border: 3px solid #a855f7;
+        }
+
+        .current-date-display {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #f97316;
+            margin-bottom: 30px;
+            padding: 10px;
         }
 
         .calendar-controls {
@@ -768,6 +777,9 @@
     <section id="calendar" class="page-section">
         <div class="calendar-container">
             <h2 class="calendar-title">भूमंडल कैलेंडर</h2>
+            <div class="current-date-display" id="currentDateDisplay">
+                <!-- Current Gregorian date will appear here -->
+            </div>
             
             <div class="calendar-controls">
                 <button class="control-btn" onclick="changeMonth(-1)">❮❮ पिछला माह</button>
@@ -907,13 +919,30 @@
     let currentYear = 2083;
     let showReligiousDays = true;
 
-    // NEW EPOCH: Adjusted so that 01 सरल 2083 falls on रविवार (Sunday)
-    // सरल is month index 7 (8th month)
-    // We need to calculate backwards: if month 7, day 1 should be Sunday (index 0)
+    // Function to update current date display and navigate to current month
+    function updateCurrentDate() {
+        const now = new Date();
+        const dayNum = now.getDate().toString().padStart(2, '0');
+        const monthNum = (now.getMonth() + 1).toString().padStart(2, '0');
+        const yearNum = now.getFullYear();
+        
+        // Display current Gregorian date
+        const dateDisplay = document.getElementById('currentDateDisplay');
+        if (dateDisplay) {
+            dateDisplay.innerText = `आज की तारीख: ${dayNum}:${monthNum}:${yearNum}`;
+        }
+        
+        // Convert current date to Bhoomandal and set calendar to that month
+        const bhooMandalDate = gregorianToBhoomandal(now);
+        currentMonth = bhooMandalDate.month;
+        currentYear = bhooMandalDate.year;
+    }
+
+    // EPOCH: 22 March 2026 (Gregorian) = 01 विवेक 2083 (Bhoomandal) = रविवार (Sunday)
     // Religious day index: 0=रविवार, 1=सोमवार, 2=मंगलवार, 3=बुधवार, 4=गुरुवार, 5=शुक्रवार, 6=शनिवार
-    const EPOCH_RELIGIOUS_DAY = 0; // Sunday = Ravi var for सरल month day 1
+    const EPOCH_RELIGIOUS_DAY = 0; // Sunday = रविवार
     const EPOCH_YEAR = 2083;
-    const EPOCH_MONTH = 7; // Month index (7 = सरल, displayed as मास 07)
+    const EPOCH_MONTH = 0; // Month index (0 = विवेक, displayed as मास 00)
 
     // Leap Year Logic - Based directly on Bhoomandal Year
     function isLeapYear(year) {
@@ -996,11 +1025,10 @@
     }
 
     // Convert Gregorian date to Bhoomandal date
-    // Epoch: Adjusted so 01 सरल 2083 = रविवार (Sunday)
+    // Epoch: 22 March 2026 (Gregorian) = 01 विवेक 2083 (Bhoomandal) = रविवार (Sunday)
     function gregorianToBhoomandal(gregorianDate) {
-        // Epoch date: We'll use a reference point
-        // Calculate from सरल (month 7), day 1, year 2083 being रविवार
-        const epochDate = new Date(2026, 2, 22); // This is just a placeholder, real mapping based on month 7
+        // Epoch date: 22 March 2026
+        const epochDate = new Date(2026, 2, 22); // Month is 0-indexed, so 2 = March
         const targetDate = new Date(gregorianDate);
         
         // Calculate difference in days
@@ -1206,6 +1234,7 @@
     }
 
     // Initialize calendar on page load
+    updateCurrentDate();
     renderCalendar();
 </script>
 
